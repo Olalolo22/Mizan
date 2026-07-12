@@ -154,7 +154,7 @@ export default function Verify() {
               }`}
             >
               <div className="step-num">{currentIdx > i ? "✓" : i + 1}</div>
-              <span style={{ display: window !== undefined && window.innerWidth < 500 ? "none" : undefined }}>
+              <span style={{ display: undefined }}>
                 {stepLabels[i]}
               </span>
             </div>
