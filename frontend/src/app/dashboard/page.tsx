@@ -39,7 +39,7 @@ export default function Dashboard() {
     const checkConnection = async () => {
       if (typeof window !== "undefined" && window.ethereum) {
         try {
-          const accounts = await window.ethereum.request({ method: "eth_accounts" });
+          const accounts = await window.ethereum.request({ method: "eth_accounts" }) as string[];
           if (accounts && accounts.length > 0) {
             setWallet(accounts[0] as Address);
           }
