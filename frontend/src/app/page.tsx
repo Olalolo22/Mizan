@@ -1,0 +1,65 @@
+export default function Home() {
+  return (
+    <main style={{ padding: "4rem 0" }}>
+      <div className="bg-glow-1"></div>
+      
+      <div style={{ textAlign: "center", marginBottom: "4rem" }}>
+        <div style={{ display: "inline-block", padding: "8px 16px", borderRadius: "20px", background: "rgba(16, 185, 129, 0.1)", color: "var(--emerald)", fontSize: "0.875rem", fontWeight: 600, marginBottom: "1rem" }}>
+          Live on Arc Testnet
+        </div>
+        <h1 style={{ fontSize: "4rem", fontWeight: 800, letterSpacing: "-0.04em", marginBottom: "1.5rem", lineHeight: 1.1 }}>
+          Fractionalize Real Estate <br/>
+          <span className="text-gradient">with ZK Compliance</span>
+        </h1>
+        <p style={{ fontSize: "1.25rem", color: "var(--text-secondary)", maxWidth: "600px", margin: "0 auto 2.5rem auto", lineHeight: 1.6 }}>
+          Invest in high-yield commercial properties. Prove your accredited status off-chain using Zero-Knowledge proofs without revealing your identity.
+        </p>
+        <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
+          <a href="/verify" className="btn-primary" style={{ fontSize: "1.125rem", padding: "16px 32px" }}>
+            Start Investing
+          </a>
+        </div>
+      </div>
+
+      <div className="glass-panel" style={{ padding: "2rem", display: "flex", gap: "2rem", alignItems: "center" }}>
+        <div style={{ flex: 1 }}>
+          <h2 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "0.5rem" }}>
+            Dubai Commercial Tower — <span className="text-gold">Ijarah Sukuk</span>
+          </h2>
+          <p style={{ color: "var(--text-muted)", marginBottom: "1.5rem" }}>
+            Premium office space in DIFC. Fully tenanted with long-term corporate leases.
+          </p>
+          
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "2rem" }}>
+            <div style={{ background: "rgba(255,255,255,0.03)", padding: "1rem", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)" }}>
+              <div style={{ fontSize: "0.875rem", color: "var(--text-muted)", marginBottom: "0.25rem" }}>Target Yield</div>
+              <div style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--emerald)" }}>8.5% APY</div>
+            </div>
+            <div style={{ background: "rgba(255,255,255,0.03)", padding: "1rem", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)" }}>
+              <div style={{ fontSize: "0.875rem", color: "var(--text-muted)", marginBottom: "0.25rem" }}>Asset Value</div>
+              <div style={{ fontSize: "1.25rem", fontWeight: 600 }}>$120,000,000</div>
+            </div>
+            <div style={{ background: "rgba(255,255,255,0.03)", padding: "1rem", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)" }}>
+              <div style={{ fontSize: "0.875rem", color: "var(--text-muted)", marginBottom: "0.25rem" }}>Structure</div>
+              <div style={{ fontSize: "1.25rem", fontWeight: 600 }}>Ijarah (Lease)</div>
+            </div>
+            <div style={{ background: "rgba(255,255,255,0.03)", padding: "1rem", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)" }}>
+              <div style={{ fontSize: "0.875rem", color: "var(--text-muted)", marginBottom: "0.25rem" }}>Maturity</div>
+              <div style={{ fontSize: "1.25rem", fontWeight: 600 }}>5 Years</div>
+            </div>
+          </div>
+        </div>
+        
+        <div style={{ flex: 1, height: "300px", borderRadius: "12px", background: "linear-gradient(145deg, rgba(30,41,59,1) 0%, rgba(15,23,42,1) 100%)", position: "relative", overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)" }}>
+          {/* Mock abstract property graphic */}
+          <div style={{ position: "absolute", inset: 0, opacity: 0.5, backgroundImage: "linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px)", backgroundSize: "20px 20px" }}></div>
+          <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: "70%", height: "150%", background: "linear-gradient(45deg, transparent, rgba(16, 185, 129, 0.1))", transform: "skewX(-15deg)" }}></div>
+          <div style={{ position: "absolute", bottom: "-20%", right: "10%", width: "40%", height: "120%", background: "linear-gradient(45deg, transparent, rgba(245, 158, 11, 0.05))", transform: "skewX(-15deg)" }}></div>
+          <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", color: "rgba(255,255,255,0.5)", fontSize: "0.875rem", letterSpacing: "0.1em", textTransform: "uppercase" }}>
+            Premium Asset Class
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
