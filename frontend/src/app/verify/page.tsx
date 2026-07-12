@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { createWalletClient, custom } from "viem";
+import { createWalletClient, custom, Address } from "viem";
+
 import { arcTestnet } from "../dashboard/page";
 import { DarkNav } from "../components/Nav";
 import { WalletIcon, FileTextIcon, ShieldCheckIcon, CheckCircleIcon } from "../components/Icons";
@@ -12,22 +13,29 @@ const STEP_ORDER: Step[] = ["wallet", "upload", "proving", "submitting", "succes
 const stepIndex = (s: Step) => STEP_ORDER.indexOf(s);
 
 export default function Verify() {
-  const [wallet, setWallet]   = useState<string | null>(null);
+  const [wallet, setWallet]   = useState<Address | null>(null);
   const [step, setStep]       = useState<Step>("wallet");
   const [logs, setLogs]       = useState<string[]>([]);
   const [txHash, setTxHash]   = useState<string | null>(null);
+  const [error, setError]     = useState<string | null>(null);
+  const [walletMsg, setWalletMsg] = useState<string | null>(null);
   const terminalRef           = useRef<HTMLDivElement>(null);
   const router                = useRouter();
 
   const connectWallet = async () => {
-    if (typeof window !== "undefined" && window.ethereum) {
+    setWalletMsg(null);
+    if (typeof window !== "undefined" && (window as any).ethereum) {
       try {
-        const client = createWalletClient({ chain: arcTestnet, transport: custom(window.ethereum) });
+        const client = createWalletClient({ chain: arcTestnet, transport: custom((window as any).ethereum) });
         const [address] = await client.requestAddresses();
         setWallet(address);
         setStep("upload");
-      } catch (e) { console.error("Wallet connection failed", e); }
-    } else { alert("Please install MetaMask!"); }
+      } catch (e: any) {
+        setWalletMsg(e?.message?.includes("rejected") ? "Connection rejected in MetaMask." : "MetaMask connection failed. Please try again.");
+      }
+    } else {
+      setWalletMsg("MetaMask not detected. Please install the MetaMask browser extension.");
+    }
   };
 
   useEffect(() => {
@@ -154,10 +162,15 @@ export default function Verify() {
                 <button onClick={connectWallet} className="btn-primary" style={{ padding: "13px 36px", fontSize: "1rem", borderRadius: "12px" }}>
                   Connect MetaMask
                 </button>
-                <button onClick={() => alert("Enterprise Circle Programmable Wallets active in production mode.")} className="btn-primary" style={{ padding: "13px 36px", fontSize: "1rem", borderRadius: "12px", background: "transparent", border: "1px solid var(--emerald)", color: "var(--emerald)" }}>
+                <button onClick={() => setWalletMsg("Circle Programmable Wallets are designed for the production enterprise integration. For this demo, use MetaMask.")} className="btn-primary" style={{ padding: "13px 36px", fontSize: "1rem", borderRadius: "12px", background: "transparent", border: "1px solid var(--emerald)", color: "var(--emerald)" }}>
                   Connect Circle Wallet
                 </button>
               </div>
+              {walletMsg && (
+                <p style={{ marginTop: "1rem", color: "var(--amber, #f59e0b)", fontSize: "0.85rem", textAlign: "center" }}>
+                  {walletMsg}
+                </p>
+              )}
             </div>
           )}
 
