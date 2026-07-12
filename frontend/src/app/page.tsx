@@ -70,7 +70,7 @@ export default function Home() {
       }}>
         <div style={{ maxWidth: 1300, margin: "0 auto", padding: "14px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24 }}>
           <MizanLogo light />
-          <div style={{ display: "flex", alignItems: "center", gap: 30, fontFamily: mono, fontSize: "12px", letterSpacing: "0.04em" }}>
+          <div className="nav-menu" style={{ display: "flex", alignItems: "center", gap: 30, fontFamily: mono, fontSize: "12px", letterSpacing: "0.04em" }}>
             <a href="#problem"  style={{ color: C.inkMid, textDecoration: "none" }}>Problem</a>
             <a href="#how"      style={{ color: C.inkMid, textDecoration: "none" }}>How it works</a>
             <a href="#why"      style={{ color: C.inkMid, textDecoration: "none" }}>Why Mizan</a>
@@ -160,7 +160,7 @@ export default function Home() {
 
       {/* ── STATS BAND (dark) ─────────────────────────────────────────────── */}
       <section style={{ background: C.dark, color: "#F3F1EA" }}>
-        <div style={{ maxWidth: 1300, margin: "0 auto", padding: "70px 40px", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 32 }}>
+        <div className="responsive-grid grid-hero-stats" style={{ maxWidth: 1300, margin: "0 auto", padding: "70px 40px", gridTemplateColumns: "repeat(4,1fr)", gap: 32 }}>
           {[
             { val: "$580B+", label: "Global Islamic finance market" },
             { val: "8.5% APY", label: "Ijarah Sukuk target yield" },
@@ -177,7 +177,7 @@ export default function Home() {
 
       {/* ── PROBLEM ──────────────────────────────────────────────────────── */}
       <section id="problem" style={{ maxWidth: 1300, margin: "0 auto", padding: "130px 40px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(0,0.9fr) minmax(0,1.1fr)", gap: 80, alignItems: "start" }}>
+        <div className="responsive-grid grid-2" style={{ gridTemplateColumns: "minmax(0,0.9fr) minmax(0,1.1fr)", gap: 80, alignItems: "start" }}>
           <div style={{ position: "sticky", top: 110 }}>
             <SectionLabel num="01" text="الشريعة والخصوصية" />
             <h2 style={{ margin: 0, fontFamily: serif, fontWeight: 300, fontSize: "clamp(2.4rem,4.4vw,4rem)", lineHeight: 1.02, letterSpacing: "-0.02em" }}>
@@ -209,7 +209,7 @@ export default function Home() {
               Not a checkbox wrapped in cryptography.
             </h2>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+          <div className="responsive-grid grid-2" style={{ gridTemplateColumns: "1fr 1fr", gap: 24 }}>
             {/* Left — old way */}
             <div style={{ background: "#F0EBE0", border: `1px solid ${C.creamDark}`, borderRadius: 4, padding: 40, display: "flex", flexDirection: "column", gap: 18 }}>
               <div style={{ fontFamily: mono, fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "#9A937F" }}>Most compliance</div>
@@ -262,8 +262,8 @@ export default function Home() {
             body: "The proof is submitted to the HalalGate verifier contract on Arc Testnet. The contract checks the BN254 pairing on-chain, records the nullifier, and authorises the wallet to hold DCTS fractional Sukuk tokens — opening the Ijarah yield pool.",
           },
         ].map((s) => (
-          <div key={s.num} style={{ display: "grid", gridTemplateColumns: "80px 200px 1fr", gap: 32, alignItems: "start", padding: "34px 0", borderTop: `1px solid ${C.border}` }}>
-            <div style={{ fontFamily: mono, fontSize: 13, color: C.teal, letterSpacing: "0.08em" }}>{s.num}</div>
+          <div key={s.num} className="responsive-grid grid-steps" style={{ gridTemplateColumns: "80px 200px 1fr", gap: 32, alignItems: "start", padding: "34px 0", borderTop: `1px solid ${C.border}` }}>
+            <div className="step-icon-col" style={{ fontFamily: mono, fontSize: 13, color: C.teal, letterSpacing: "0.08em" }}>{s.num}</div>
             <div style={{ fontFamily: serif, fontSize: "1.7rem", fontWeight: 400, lineHeight: 1.1, letterSpacing: "-0.01em", display: "flex", alignItems: "flex-start", gap: "0.6rem", flexDirection: "column" }}>
               <span style={{ color: C.teal, marginBottom: "0.25rem", display: "flex" }}>{s.icon}</span>
               {s.title}
@@ -288,7 +288,7 @@ export default function Home() {
               Compliance that keeps the secret.
             </h2>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "1px", background: C.creamDark, border: `1px solid ${C.creamDark}`, borderRadius: 4, overflow: "hidden" }}>
+          <div className="responsive-grid grid-4" style={{ gridTemplateColumns: "repeat(4,1fr)", gap: "1px", background: C.creamDark, border: `1px solid ${C.creamDark}`, borderRadius: 4, overflow: "hidden" }}>
             {[
               { icon: <LockIcon size={18} />, num: "→ 01", title: "No sensitive documents stored", body: "The document never leaves your device. There is no honeypot database to breach, subpoena, or leak." },
               { icon: <ShieldCheckIcon size={18} />, num: "→ 02", title: "Privacy by default", body: "Zero-knowledge from the ground up. The chain learns only one bit: this wallet qualifies. Nothing about who, how much, or from where." },
@@ -315,7 +315,7 @@ export default function Home() {
           </h2>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0, border: `1px solid ${C.border}`, borderRadius: 4, overflow: "hidden" }}>
+        <div className="responsive-grid grid-2" style={{ gridTemplateColumns: "1fr 1fr", gap: 0, border: `1px solid ${C.border}`, borderRadius: 4, overflow: "hidden" }}>
           {/* Info */}
           <div style={{ padding: "3rem 3.5rem", background: C.cream }}>
             <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem", flexWrap: "wrap" }}>
@@ -327,7 +327,7 @@ export default function Home() {
             </p>
 
             {/* Stats grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px", background: C.border, border: `1px solid ${C.border}`, marginBottom: "2rem" }}>
+            <div className="responsive-grid grid-2" style={{ gridTemplateColumns: "1fr 1fr", gap: "1px", background: C.border, border: `1px solid ${C.border}`, marginBottom: "2rem" }}>
               {[
                 { label: "Target Yield", val: "8.5% APY", accent: true },
                 { label: "Asset Value",  val: "$120,000,000" },
@@ -390,7 +390,7 @@ export default function Home() {
           </div>
 
           {/* Trust cards */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "1px", background: C.darkAlt, border: `1px solid ${C.darkAlt}`, borderRadius: 4, marginTop: 80, overflow: "hidden" }}>
+          <div className="responsive-grid grid-3" style={{ gridTemplateColumns: "repeat(3,1fr)", gap: "1px", background: C.darkAlt, border: `1px solid ${C.darkAlt}`, borderRadius: 4, marginTop: 80, overflow: "hidden" }}>
             {[
               { tag: "Trust anchor", title: "DigiCert Trusted Root G4", body: "The same class of root certificate a browser uses to validate HTTPS — the chain DocuSign signs with. No custom trust assumptions." },
               { tag: "No middlemen", title: "No notary. No relay. No custodian.", body: "No relay server, no third-party trust assumption beyond a certificate authority already trusted throughout the internet." },
@@ -436,7 +436,7 @@ export default function Home() {
 
       {/* ── FOOTER ────────────────────────────────────────────────────────── */}
       <footer style={{ background: C.dark, color: "#F3F1EA", borderTop: `1px solid ${C.darkAlt}` }}>
-        <div style={{ maxWidth: 1300, margin: "0 auto", padding: "70px 40px 44px", display: "grid", gridTemplateColumns: "1.6fr 1fr 1fr 1fr", gap: 40 }}>
+        <div className="responsive-grid grid-footer" style={{ maxWidth: 1300, margin: "0 auto", padding: "70px 40px 44px", gridTemplateColumns: "1.6fr 1fr 1fr 1fr", gap: 40 }}>
           <div>
             <MizanLogo />
             <p style={{ margin: "18px 0 0", maxWidth: 300, fontSize: 14, lineHeight: 1.6, color: "#9A9484" }}>
