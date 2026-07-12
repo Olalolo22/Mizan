@@ -107,6 +107,7 @@ async fn run_prover() {
     let pk = client.setup(sp1_sdk::Elf::from(elf)).await.expect("Setup failed");
     let vk = pk.verifying_key();
     println!("Program VK (for contract hardcode): {}", vk.bytes32());
+    return; // EXIT EARLY to prevent OOM!
 
     let proof: SP1ProofWithPublicValues = client
         .prove(&pk, stdin)
