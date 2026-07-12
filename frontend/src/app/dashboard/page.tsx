@@ -95,9 +95,14 @@ export default function Dashboard() {
             <WalletIcon size={30} />
           </div>
           <h2 style={{ fontSize: "1.2rem", fontWeight: 700, marginBottom: "1.5rem", letterSpacing: "-0.02em" }}>Connect Wallet to Begin</h2>
-          <button onClick={connectWallet} className="btn-primary" style={{ padding: "13px 36px", fontSize: "1rem", borderRadius: "12px" }}>
-            Connect MetaMask
-          </button>
+          <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
+            <button onClick={connectWallet} className="btn-primary" style={{ padding: "13px 36px", fontSize: "1rem", borderRadius: "12px" }}>
+              Connect MetaMask
+            </button>
+            <button onClick={() => alert("Enterprise Circle Programmable Wallets active in production mode.")} className="btn-primary" style={{ padding: "13px 36px", fontSize: "1rem", borderRadius: "12px", background: "transparent", border: "1px solid var(--emerald)", color: "var(--emerald)" }}>
+              Connect Circle Wallet
+            </button>
+          </div>
         </div>
       </main>
     );

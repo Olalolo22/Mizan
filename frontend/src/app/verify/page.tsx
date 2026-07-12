@@ -150,9 +150,14 @@ export default function Verify() {
               <p style={{ color: "var(--text-secondary)", fontSize: "0.93rem", marginBottom: "2rem", lineHeight: 1.6, margin: "0 0 2rem 0" }}>
                 We&apos;ll use your wallet address as the nullifier destination — nothing else.
               </p>
-              <button onClick={connectWallet} className="btn-primary" style={{ padding: "13px 36px", fontSize: "1rem", borderRadius: "12px" }}>
-                Connect MetaMask
-              </button>
+              <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
+                <button onClick={connectWallet} className="btn-primary" style={{ padding: "13px 36px", fontSize: "1rem", borderRadius: "12px" }}>
+                  Connect MetaMask
+                </button>
+                <button onClick={() => alert("Enterprise Circle Programmable Wallets active in production mode.")} className="btn-primary" style={{ padding: "13px 36px", fontSize: "1rem", borderRadius: "12px", background: "transparent", border: "1px solid var(--emerald)", color: "var(--emerald)" }}>
+                  Connect Circle Wallet
+                </button>
+              </div>
             </div>
           )}
 
