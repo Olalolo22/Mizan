@@ -62,4 +62,13 @@ contract ZKSukukGate {
 
         emit InvestorAuthorized(investor, nullifier);
     }
+
+    // Institutional Control: Revoke an investor's accreditation status
+    // This immediately blocks them from receiving any new secondary market transfers
+    // and prevents them from trading away their existing balance.
+    function revokeAuthorization(address investor) external onlyOwner {
+        require(authorizedInvestors[investor], "Investor not authorized");
+        authorizedInvestors[investor] = false;
+        sukukToken.deauthorize(investor);
+    }
 }

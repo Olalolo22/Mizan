@@ -20,6 +20,11 @@ contract SukukToken is ERC20 {
         _mint(investor, amount);
     }
 
+    function deauthorize(address investor) external {
+        require(msg.sender == gate, "Only gate");
+        authorized[investor] = false;
+    }
+
     // Transfer restriction — only authorized holders
     function _update(address from, address to, uint256 value) internal override {
         if (from != address(0)) require(authorized[from], "Sender not authorized");
