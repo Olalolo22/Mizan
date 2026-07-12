@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export default function Home() {
   return (
     <main style={{ padding: "4rem 0" }}>
@@ -50,13 +52,18 @@ export default function Home() {
           </div>
         </div>
         
-        <div style={{ flex: 1, height: "300px", borderRadius: "12px", background: "linear-gradient(145deg, rgba(30,41,59,1) 0%, rgba(15,23,42,1) 100%)", position: "relative", overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)" }}>
-          {/* Mock abstract property graphic */}
-          <div style={{ position: "absolute", inset: 0, opacity: 0.5, backgroundImage: "linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px)", backgroundSize: "20px 20px" }}></div>
-          <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: "70%", height: "150%", background: "linear-gradient(45deg, transparent, rgba(16, 185, 129, 0.1))", transform: "skewX(-15deg)" }}></div>
-          <div style={{ position: "absolute", bottom: "-20%", right: "10%", width: "40%", height: "120%", background: "linear-gradient(45deg, transparent, rgba(245, 158, 11, 0.05))", transform: "skewX(-15deg)" }}></div>
-          <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", color: "rgba(255,255,255,0.5)", fontSize: "0.875rem", letterSpacing: "0.1em", textTransform: "uppercase" }}>
-            Premium Asset Class
+        <div style={{ flex: 1, height: "300px", borderRadius: "12px", position: "relative", overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)" }}>
+          <Image
+            src="/dubai-tower.png"
+            alt="Dubai Commercial Tower — DIFC"
+            fill
+            style={{ objectFit: "cover", objectPosition: "center top" }}
+            priority
+          />
+          {/* Dark gradient overlay for readability */}
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(10,15,30,0.6) 0%, transparent 60%)" }} />
+          <div style={{ position: "absolute", bottom: "1rem", left: "1rem", color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", letterSpacing: "0.1em", textTransform: "uppercase" }}>
+            DIFC · Dubai, UAE
           </div>
         </div>
       </div>
