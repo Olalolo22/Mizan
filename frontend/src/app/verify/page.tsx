@@ -4,44 +4,30 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createWalletClient, custom } from "viem";
 import { arcTestnet } from "../dashboard/page";
+import { DarkNav } from "../components/Nav";
+import { WalletIcon, FileTextIcon, ShieldCheckIcon, CheckCircleIcon } from "../components/Icons";
 
 type Step = "wallet" | "upload" | "proving" | "submitting" | "success";
-
 const STEP_ORDER: Step[] = ["wallet", "upload", "proving", "submitting", "success"];
-
-function stepIndex(s: Step) {
-  return STEP_ORDER.indexOf(s);
-}
+const stepIndex = (s: Step) => STEP_ORDER.indexOf(s);
 
 export default function Verify() {
-  const [wallet, setWallet] = useState<string | null>(null);
-  const [step, setStep] = useState<Step>("wallet");
-  const [logs, setLogs] = useState<string[]>([]);
-  const [txHash, setTxHash] = useState<string | null>(null);
-  const terminalRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
+  const [wallet, setWallet]   = useState<string | null>(null);
+  const [step, setStep]       = useState<Step>("wallet");
+  const [logs, setLogs]       = useState<string[]>([]);
+  const [txHash, setTxHash]   = useState<string | null>(null);
+  const terminalRef           = useRef<HTMLDivElement>(null);
+  const router                = useRouter();
 
   const connectWallet = async () => {
     if (typeof window !== "undefined" && window.ethereum) {
       try {
-        const client = createWalletClient({
-          chain: arcTestnet,
-          transport: custom(window.ethereum),
-        });
+        const client = createWalletClient({ chain: arcTestnet, transport: custom(window.ethereum) });
         const [address] = await client.requestAddresses();
         setWallet(address);
         setStep("upload");
-      } catch (e) {
-        console.error("Wallet connection failed", e);
-      }
-    } else {
-      alert("Please install MetaMask!");
-    }
-  };
-
-  const handleUpload = () => {
-    if (!wallet) return;
-    setStep("proving");
+      } catch (e) { console.error("Wallet connection failed", e); }
+    } else { alert("Please install MetaMask!"); }
   };
 
   useEffect(() => {
@@ -65,16 +51,13 @@ export default function Verify() {
       { text: "Proof complete. Size: 260 bytes.", cls: "success" },
       { text: "Preparing payload for Arc EVM...", cls: "info" },
     ];
-
     let i = 0;
     const iv = setInterval(() => {
       if (i < proofLogs.length) {
         const { text, cls } = proofLogs[i] as { text: string; cls?: string };
         setLogs((p) => [...p, cls ? `__${cls}__${text}` : text]);
         i++;
-        if (terminalRef.current) {
-          terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
-        }
+        if (terminalRef.current) terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
       } else {
         clearInterval(iv);
         setStep("submitting");
@@ -86,20 +69,16 @@ export default function Verify() {
   useEffect(() => {
     if (step !== "submitting") return;
     const submit = async () => {
-      const addLog = (text: string, cls?: string) =>
-        setLogs((p) => [...p, cls ? `__${cls}__${text}` : text]);
-
+      const addLog = (text: string, cls?: string) => setLogs((p) => [...p, cls ? `__${cls}__${text}` : text]);
       addLog(">> Submitting ZK Proof to Arc Testnet via Relay...", "info");
       try {
         const res = await fetch("/proof.json");
         const proofData = await res.json();
-
         const submitRes = await fetch("/api/relay", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ investor: wallet, proofData }),
         });
-
         const data = await submitRes.json();
         if (data.success) {
           setTxHash(data.hash);
@@ -108,241 +87,161 @@ export default function Verify() {
         } else {
           addLog(`>> ERROR: ${data.error}`, "warn");
         }
-      } catch (e: any) {
-        addLog(`>> FAILED: ${e.message}`, "warn");
+      } catch (e: unknown) {
+        addLog(`>> FAILED: ${e instanceof Error ? e.message : String(e)}`, "warn");
       }
     };
     submit();
   }, [step, wallet]);
 
   const currentIdx = stepIndex(step);
-
-  const stepLabels = ["Connect Wallet", "Upload Proof", "Generate ZK", "Submit"];
   const stepKeys: Step[] = ["wallet", "upload", "proving", "submitting"];
+  const stepLabels = ["Connect Wallet", "Upload Doc", "Generate ZK", "Submit"];
+  const stepIcons = [<WalletIcon key="w" size={14}/>, <FileTextIcon key="f" size={14}/>, <ShieldCheckIcon key="s" size={14}/>, <CheckCircleIcon key="c" size={14}/>];
 
   return (
-    <main style={{ maxWidth: "700px", margin: "0 auto", paddingTop: "4rem", paddingBottom: "6rem" }} className="page-enter">
-
-      {/* Header */}
-      <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-        <div className="badge badge-blue" style={{ marginBottom: "1rem" }}>ZK Accreditation Gate</div>
-        <h1
-          style={{
-            fontFamily: "'Syne', sans-serif",
-            fontSize: "clamp(2rem, 4vw, 3rem)",
-            fontWeight: 800,
-            letterSpacing: "-0.04em",
-            marginBottom: "0.75rem",
-          }}
-        >
-          Prove Without Revealing
-        </h1>
-        <p style={{ color: "var(--text-secondary)", fontSize: "1.05rem", lineHeight: 1.65 }}>
-          Your accredited status is verified with a ZK proof. No identity or net
-          worth is ever exposed on-chain.
-        </p>
+    <div style={{ minHeight: "100vh", background: "var(--bg-void)", color: "var(--text-primary)", fontFamily: "'Inter', system-ui, sans-serif" }}>
+      {/* Background orbs */}
+      <div className="scene-bg">
+        <div className="orb orb-1" /><div className="orb orb-2" /><div className="orb orb-3" />
       </div>
+      <div className="scene-grid" />
 
-      {/* Step bar */}
-      <div className="steps-row">
-        {stepKeys.map((s, i) => (
-          <>
-            <div
-              key={s}
-              className={`step-item ${
-                currentIdx > i ? "done" : currentIdx === i ? "active" : ""
-              }`}
-            >
-              <div className="step-num">{currentIdx > i ? "✓" : i + 1}</div>
-              <span style={{ display: undefined }}>
-                {stepLabels[i]}
-              </span>
-            </div>
-            {i < stepKeys.length - 1 && (
-              <div key={`c-${i}`} className={`step-connector ${currentIdx > i ? "done" : ""}`} />
-            )}
-          </>
-        ))}
-      </div>
+      <DarkNav />
 
-      {/* Main card */}
-      <div className="glass-panel" style={{ padding: "2.75rem" }}>
+      <main style={{ maxWidth: 700, margin: "0 auto", padding: "4rem 2rem 6rem", position: "relative", zIndex: 2 }} className="page-enter">
 
-        {/* ── CONNECT ── */}
-        {step === "wallet" && (
-          <div style={{ textAlign: "center" }}>
-            <div
-              style={{
-                width: "80px",
-                height: "80px",
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "50%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                margin: "0 auto 1.75rem auto",
-                fontSize: "2.2rem",
-              }}
-            >
-              🦊
-            </div>
-            <h2 style={{ fontSize: "1.4rem", fontWeight: 700, marginBottom: "0.65rem", letterSpacing: "-0.02em" }}>
-              Connect your wallet
-            </h2>
-            <p style={{ color: "var(--text-secondary)", fontSize: "0.93rem", marginBottom: "2rem", lineHeight: 1.6 }}>
-              We'll use your wallet address as the nullifier destination — nothing else.
-            </p>
-            <button onClick={connectWallet} className="btn-primary" style={{ padding: "13px 36px", fontSize: "1rem", borderRadius: "12px" }}>
-              Connect MetaMask
-            </button>
-          </div>
-        )}
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: "3rem" }}>
+          <div className="badge badge-blue" style={{ marginBottom: "1rem" }}>ZK Accreditation Gate</div>
+          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 800, letterSpacing: "-0.04em", marginBottom: "0.75rem" }}>
+            Prove Without Revealing
+          </h1>
+          <p style={{ color: "var(--text-secondary)", fontSize: "1.05rem", lineHeight: 1.65, margin: 0 }}>
+            Your accredited status is verified with a ZK proof. No identity or net worth is ever exposed on-chain.
+          </p>
+        </div>
 
-        {/* ── UPLOAD ── */}
-        {step === "upload" && (
-          <div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.75rem" }}>
-              <h2 style={{ fontSize: "1.25rem", fontWeight: 700, letterSpacing: "-0.02em" }}>
-                Upload Attestation
-              </h2>
-              <span className="badge badge-emerald" style={{ fontSize: "0.72rem" }}>
-                {wallet?.slice(0, 6)}...{wallet?.slice(-4)}
-              </span>
-            </div>
-
-            <div className="upload-zone" style={{ marginBottom: "1.5rem" }} onClick={handleUpload}>
-              <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>📄</div>
-              <h3 style={{ fontSize: "1.1rem", fontWeight: 700, marginBottom: "0.5rem", letterSpacing: "-0.02em" }}>
-                Upload Attestation PDF
-              </h3>
-              <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", lineHeight: 1.6 }}>
-                DocuSign-signed CPA letter or GCC Bank Certification
-              </p>
-              <div style={{ marginTop: "1.25rem", display: "inline-flex", gap: "0.4rem" }}>
-                <span className="badge badge-blue">PDF</span>
-                <span className="badge badge-blue">DocuSign X.509</span>
-                <span className="badge badge-blue">RSA-SHA256</span>
+        {/* Step indicator */}
+        <div className="steps-row">
+          {stepKeys.map((s, i) => (
+            <>
+              <div key={s} className={`step-item ${currentIdx > i ? "done" : currentIdx === i ? "active" : ""}`}>
+                <div className="step-num">
+                  {currentIdx > i ? <CheckCircleIcon size={12}/> : stepIcons[i]}
+                </div>
+                <span>{stepLabels[i]}</span>
               </div>
+              {i < stepKeys.length - 1 && <div key={`c-${i}`} className={`step-connector ${currentIdx > i ? "done" : ""}`} />}
+            </>
+          ))}
+        </div>
+
+        {/* Card */}
+        <div className="glass-panel" style={{ padding: "2.75rem" }}>
+
+          {/* ── CONNECT ── */}
+          {step === "wallet" && (
+            <div style={{ textAlign: "center" }}>
+              <div style={{ width: 80, height: 80, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1.75rem auto", color: "var(--text-secondary)" }}>
+                <WalletIcon size={32} />
+              </div>
+              <h2 style={{ fontSize: "1.4rem", fontWeight: 700, marginBottom: "0.65rem", letterSpacing: "-0.02em" }}>Connect your wallet</h2>
+              <p style={{ color: "var(--text-secondary)", fontSize: "0.93rem", marginBottom: "2rem", lineHeight: 1.6, margin: "0 0 2rem 0" }}>
+                We&apos;ll use your wallet address as the nullifier destination — nothing else.
+              </p>
+              <button onClick={connectWallet} className="btn-primary" style={{ padding: "13px 36px", fontSize: "1rem", borderRadius: "12px" }}>
+                Connect MetaMask
+              </button>
             </div>
+          )}
 
-            <button
-              onClick={handleUpload}
-              className="btn-primary"
-              style={{ width: "100%", padding: "14px", fontSize: "1rem", borderRadius: "12px" }}
-            >
-              Generate Zero-Knowledge Proof
-            </button>
-          </div>
-        )}
-
-        {/* ── PROVING / SUBMITTING ── */}
-        {(step === "proving" || step === "submitting") && (
-          <div>
-            <h3 style={{ fontSize: "1.05rem", fontWeight: 700, marginBottom: "1.25rem", display: "flex", alignItems: "center", letterSpacing: "-0.02em" }}>
-              <span className="spinner" />
-              {step === "proving" ? "Generating ZK Proof locally…" : "Submitting to Arc Testnet…"}
-            </h3>
-
-            {/* Terminal window chrome */}
-            <div
-              style={{
-                background: "#020c18",
-                borderRadius: "12px",
-                border: "1px solid rgba(16,217,138,0.1)",
-                overflow: "hidden",
-              }}
-            >
-              {/* Title bar */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  padding: "0.6rem 1rem",
-                  borderBottom: "1px solid rgba(16,217,138,0.08)",
-                  background: "rgba(0,0,0,0.3)",
-                }}
-              >
-                <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#ff5f57" }} />
-                <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#febc2e" }} />
-                <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#28c840" }} />
-                <span style={{ marginLeft: "0.5rem", fontSize: "0.72rem", color: "rgba(255,255,255,0.3)", fontFamily: "monospace" }}>
-                  sp1-zkvm — halalgate-prover
+          {/* ── UPLOAD ── */}
+          {step === "upload" && (
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.75rem" }}>
+                <h2 style={{ fontSize: "1.25rem", fontWeight: 700, letterSpacing: "-0.02em", margin: 0 }}>Upload Attestation</h2>
+                <span className="badge badge-emerald" style={{ fontSize: "0.72rem" }}>
+                  {wallet?.slice(0, 6)}...{wallet?.slice(-4)}
                 </span>
               </div>
-              <div className="terminal" ref={terminalRef} style={{ borderRadius: 0, border: "none", boxShadow: "none" }}>
-                {logs.map((log, idx) => {
-                  const cls = log.startsWith("__success__") ? "success"
-                    : log.startsWith("__info__") ? "info"
-                    : log.startsWith("__warn__") ? "warn"
-                    : "";
-                  const text = cls ? log.replace(/^__\w+__/, "") : log;
-                  return (
-                    <div key={idx} className={`terminal-line ${cls}`}>
-                      {text}
-                    </div>
-                  );
-                })}
+              <div className="upload-zone" style={{ marginBottom: "1.5rem" }} onClick={() => setStep("proving")}>
+                <div style={{ color: "var(--text-secondary)", marginBottom: "1rem", display: "flex", justifyContent: "center" }}>
+                  <FileTextIcon size={44} />
+                </div>
+                <h3 style={{ fontSize: "1.1rem", fontWeight: 700, marginBottom: "0.5rem", letterSpacing: "-0.02em" }}>
+                  Upload Attestation PDF
+                </h3>
+                <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", lineHeight: 1.6, margin: 0 }}>
+                  DocuSign-signed CPA letter or GCC Bank Certification
+                </p>
+                <div style={{ marginTop: "1.25rem", display: "inline-flex", gap: "0.4rem" }}>
+                  <span className="badge badge-blue">PDF</span>
+                  <span className="badge badge-blue">DocuSign X.509</span>
+                  <span className="badge badge-blue">RSA-SHA256</span>
+                </div>
+              </div>
+              <button onClick={() => setStep("proving")} className="btn-primary" style={{ width: "100%", padding: "14px", fontSize: "1rem", borderRadius: "12px" }}>
+                Generate Zero-Knowledge Proof
+              </button>
+            </div>
+          )}
+
+          {/* ── PROVING / SUBMITTING ── */}
+          {(step === "proving" || step === "submitting") && (
+            <div>
+              <h3 style={{ fontSize: "1.05rem", fontWeight: 700, marginBottom: "1.25rem", display: "flex", alignItems: "center", letterSpacing: "-0.02em", margin: "0 0 1.25rem 0" }}>
+                <span className="spinner" />
+                {step === "proving" ? "Generating ZK Proof locally…" : "Submitting to Arc Testnet…"}
+              </h3>
+              <div style={{ background: "#020c18", borderRadius: 12, border: "1px solid rgba(16,217,138,0.1)", overflow: "hidden" }}>
+                {/* Terminal chrome */}
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.6rem 1rem", borderBottom: "1px solid rgba(16,217,138,0.08)", background: "rgba(0,0,0,0.3)" }}>
+                  <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#ff5f57" }} />
+                  <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#febc2e" }} />
+                  <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#28c840" }} />
+                  <span style={{ marginLeft: "0.5rem", fontSize: "0.72rem", color: "rgba(255,255,255,0.3)", fontFamily: "monospace" }}>sp1-zkvm — halalgate-prover</span>
+                </div>
+                <div className="terminal" ref={terminalRef} style={{ borderRadius: 0, border: "none", boxShadow: "none" }}>
+                  {logs.map((log, idx) => {
+                    const cls = log.startsWith("__success__") ? "success" : log.startsWith("__info__") ? "info" : log.startsWith("__warn__") ? "warn" : "";
+                    const text = cls ? log.replace(/^__\w+__/, "") : log;
+                    return <div key={idx} className={`terminal-line ${cls}`}>{text}</div>;
+                  })}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* ── SUCCESS ── */}
-        {step === "success" && (
-          <div style={{ textAlign: "center" }}>
-            <div
-              className="success-icon"
-              style={{
-                width: "88px",
-                height: "88px",
-                background: "rgba(16,217,138,0.12)",
-                border: "2px solid rgba(16,217,138,0.3)",
-                borderRadius: "50%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                margin: "0 auto 1.75rem auto",
-                fontSize: "2.5rem",
-                color: "var(--emerald)",
-                boxShadow: "0 0 40px var(--emerald-glow)",
-              }}
-            >
-              ✓
+          {/* ── SUCCESS ── */}
+          {step === "success" && (
+            <div style={{ textAlign: "center" }}>
+              <div className="success-icon" style={{ width: 88, height: 88, background: "rgba(16,217,138,0.12)", border: "2px solid rgba(16,217,138,0.3)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1.75rem auto", color: "var(--emerald)", boxShadow: "0 0 40px var(--emerald-glow)" }}>
+                <CheckCircleIcon size={40} />
+              </div>
+              <h2 style={{ fontSize: "1.75rem", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: "0.65rem" }} className="text-gradient-emerald">
+                Verification Successful
+              </h2>
+              <p style={{ color: "var(--text-secondary)", marginBottom: "0.75rem", lineHeight: 1.6, margin: "0 0 0.75rem" }}>
+                Your wallet is now authorised to hold fractional Sukuk tokens.
+              </p>
+              {txHash && (
+                <a href={`https://testnet.arcscan.app/tx/${txHash}`} target="_blank" rel="noreferrer" style={{ display: "inline-block", fontSize: "0.8rem", color: "var(--emerald)", marginBottom: "2rem", fontFamily: "monospace" }}>
+                  Tx: {txHash.slice(0, 20)}…
+                </a>
+              )}
+              <br />
+              <button onClick={() => router.push("/dashboard")} className="btn-primary" style={{ padding: "13px 36px", fontSize: "1rem", borderRadius: "12px" }}>
+                Go to Dashboard →
+              </button>
             </div>
-            <h2 style={{ fontSize: "1.75rem", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: "0.65rem" }} className="text-gradient-emerald">
-              Verification Successful
-            </h2>
-            <p style={{ color: "var(--text-secondary)", marginBottom: "0.75rem", lineHeight: 1.6 }}>
-              Your wallet is now authorized to hold fractional Sukuk tokens.
-            </p>
-            {txHash && (
-              <a
-                href={`https://testnet.arcscan.app/tx/${txHash}`}
-                target="_blank"
-                rel="noreferrer"
-                style={{ display: "inline-block", fontSize: "0.8rem", color: "var(--emerald)", marginBottom: "2rem", fontFamily: "monospace" }}
-              >
-                Tx: {txHash.slice(0, 20)}…
-              </a>
-            )}
-            <br />
-            <button
-              onClick={() => router.push("/dashboard")}
-              className="btn-primary"
-              style={{ padding: "13px 36px", fontSize: "1rem", borderRadius: "12px" }}
-            >
-              Go to Dashboard →
-            </button>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
 
-      {/* Footer note */}
-      <p style={{ textAlign: "center", marginTop: "1.5rem", fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-        Zero personal data is stored. Your ZK proof is generated locally in your browser.
-      </p>
-    </main>
+        <p style={{ textAlign: "center", marginTop: "1.5rem", fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
+          Zero personal data is stored. Your ZK proof is generated locally in your browser.
+        </p>
+      </main>
+    </div>
   );
 }
