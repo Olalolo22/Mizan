@@ -129,7 +129,7 @@ export default function Home() {
         {/* Bottom row */}
         <div style={{ position: "relative", zIndex: 2, maxWidth: 1300, margin: "0 auto", width: "100%", marginTop: "auto", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "flex-end", gap: 40, paddingTop: 56 }}>
           <p style={{ margin: 0, maxWidth: 460, fontSize: "16px", lineHeight: 1.65, color: "#C4B89A" }}>
-            Mizan lets Muslim investors prove Shariah-compliant accredited status for tokenized Sukuk — using zero-knowledge proofs, verified on Arc. No documents leave your hands.
+            Mizan lets investors privately prove eligibility for Shariah-compliant tokenized Sukuk using zero-knowledge proofs verified on Arc. No sensitive documents leave their possession.
           </p>
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
             <Link href="/verify" style={{
@@ -163,7 +163,7 @@ export default function Home() {
         <div className="responsive-grid grid-hero-stats" style={{ maxWidth: 1300, margin: "0 auto", padding: "70px 40px", gridTemplateColumns: "repeat(4,1fr)", gap: 32 }}>
           {[
             { val: "$580B+", label: "Global Islamic finance market" },
-            { val: "8.5% APY", label: "Ijarah Sukuk target yield" },
+            { val: "8.5%", label: "Illustrative target yield model" },
             { val: "~260 B", label: "ZK proof size — verified on-chain" },
             { val: "0", label: "Documents stored, exchanged, or exposed" },
           ].map((s) => (
@@ -186,10 +186,10 @@ export default function Home() {
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
             <p style={{ margin: 0, fontSize: 17, lineHeight: 1.65, color: C.inkMid }}>
-              Every day, institutions ask Muslim investors to hand over their most sensitive financial documents — not because they need to hold them, but because regulation demands proof of eligibility. The result is a compliance process built on paperwork and centralised databases that attract exactly the kind of breach they were meant to prevent.
+              Every day, institutions ask investors to hand over their most sensitive financial documents — not because they need to hold them, but because regulation demands proof of eligibility. The result is a compliance process built on paperwork and centralised databases that attract exactly the kind of breach they were meant to prevent.
             </p>
             <p style={{ margin: 0, fontSize: 17, lineHeight: 1.65, color: C.inkMid }}>
-              For Shariah-compliant assets — Sukuk, Murabaha funds, fractional real estate — the gate is even higher. Investors must prove accredited status <em>and</em> Halal compliance intent, often to platforms with no binding obligation to protect that information.
+              For Shariah-compliant assets — Sukuk, Murabaha funds, fractional real estate — the gate is even higher. Investors must satisfy regulatory eligibility requirements while accessing assets structured according to Shariah principles, often submitting to platforms with no binding obligation to protect that information.
             </p>
             <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 28, marginTop: 6 }}>
               <p style={{ margin: 0, fontFamily: serif, fontStyle: "italic", fontSize: "clamp(1.4rem,2.4vw,2rem)", lineHeight: 1.3, color: C.ink }}>
@@ -206,7 +206,7 @@ export default function Home() {
           <div style={{ maxWidth: 760, marginBottom: 60 }}>
             <SectionLabel num="02" text="Why it's different" />
             <h2 style={{ margin: 0, fontFamily: serif, fontWeight: 300, fontSize: "clamp(2.4rem,4.4vw,4rem)", lineHeight: 1.02, letterSpacing: "-0.02em" }}>
-              Not a checkbox wrapped in cryptography.
+              Not another centralised compliance database.
             </h2>
           </div>
           <div className="responsive-grid grid-2" style={{ gridTemplateColumns: "1fr 1fr", gap: 24 }}>
@@ -227,7 +227,7 @@ export default function Home() {
                 Proves a real, signed document satisfies the legal requirement.
               </h3>
               <p style={{ margin: 0, fontSize: 15, lineHeight: 1.6, color: "#B8B2A0" }}>
-                Issued by a licensed CPA or GCC bank, chained back to a publicly trusted certificate authority. We don&apos;t ask &ldquo;do you say you&apos;re compliant.&rdquo; We ask &ldquo;can you prove a trusted third party already verified this&rdquo; — and check the cryptographic math ourselves.
+                Issued by a trusted attestation provider and cryptographically verified through certificate-backed signatures. We don&apos;t ask &ldquo;do you say you&apos;re compliant.&rdquo; We ask &ldquo;can you prove a trusted third party already verified this&rdquo; — and check the cryptographic math ourselves.
               </p>
             </div>
           </div>
@@ -247,19 +247,19 @@ export default function Home() {
             num: "01",
             icon: <FileTextIcon size={18} />,
             title: "Sign the attestation",
-            body: "The investor obtains a DocuSign-signed CPA attestation letter or GCC bank certification — standard proof of accredited-investor status — carrying a PKCS#7 digital signature chained to a publicly trusted certificate authority. The document never leaves their hands.",
+            body: "The investor obtains a digitally signed CPA attestation letter or institutional accreditation document — standard proof of accredited-investor status — carrying a PKCS#7 digital signature chained to a publicly trusted certificate authority. The document never leaves their hands.",
           },
           {
             num: "02",
             icon: <ShieldCheckIcon size={18} />,
             title: "Prove with SP1 zkVM",
-            body: "An SP1 zkVM program verifies the signature, confirms the document is under 90 days old, matches the statutory phrase, and derives a replay-prevention nullifier — then compresses everything to a ~260-byte Groth16 proof. All computed locally. Nothing is uploaded.",
+            body: "An SP1 zkVM program verifies the signature, can enforce document freshness requirements, matches the statutory phrase, and derives a replay-prevention nullifier — then compresses everything to a ~260-byte Groth16 proof. All computed locally. Nothing is uploaded.",
           },
           {
             num: "03",
             icon: <CoinsIcon size={18} />,
             title: "Unlock Sukuk access",
-            body: "The proof is submitted to the HalalGate verifier contract on Arc Testnet. The contract checks the BN254 pairing on-chain, records the nullifier, and authorises the wallet to hold DCTS fractional Sukuk tokens — opening the Ijarah yield pool.",
+            body: "The proof is submitted to the ZKSukukGate verifier contract on Arc Testnet. The contract checks the BN254 pairing on-chain, records the nullifier, and authorises the wallet to hold DCTS fractional Sukuk tokens — opening the Ijarah yield pool.",
           },
         ].map((s) => (
           <div key={s.num} className="responsive-grid grid-steps" style={{ gridTemplateColumns: "80px 200px 1fr", gap: 32, alignItems: "start", padding: "34px 0", borderTop: `1px solid ${C.border}` }}>
@@ -292,7 +292,7 @@ export default function Home() {
             {[
               { icon: <LockIcon size={18} />, num: "→ 01", title: "No sensitive documents stored", body: "The document never leaves your device. There is no honeypot database to breach, subpoena, or leak." },
               { icon: <ShieldCheckIcon size={18} />, num: "→ 02", title: "Privacy by default", body: "Zero-knowledge from the ground up. The chain learns only one bit: this wallet qualifies. Nothing about who, how much, or from where." },
-              { icon: <SparkleIcon size={18} />, num: "→ 03", title: "Shariah-compatible structure", body: "Assets use Ijarah (lease) Sukuk structure — interest-free, asset-backed, AAOIFI-compliant. Compliance is mathematical, not reputational." },
+              { icon: <SparkleIcon size={18} />, num: "→ 03", title: "Shariah-compatible structure", body: "Assets are structured around Ijarah (lease-based) Sukuk principles aligned with AAOIFI standards. Compliance is mathematical, not reputational." },
               { icon: <GlobeIcon size={18} />, num: "→ 04", title: "Cryptographically verifiable", body: "Every authorisation is backed by a Groth16 proof anyone can check on-chain — not a checkbox, not an admin's word." },
             ].map((f) => (
               <div key={f.num} style={{ background: C.cream, padding: "38px 30px", display: "flex", flexDirection: "column", gap: 16, minHeight: 250 }}>
@@ -311,7 +311,7 @@ export default function Home() {
         <div style={{ maxWidth: 760, marginBottom: 60 }}>
           <SectionLabel num="05" text="The Asset" />
           <h2 style={{ margin: 0, fontFamily: serif, fontWeight: 300, fontSize: "clamp(2.4rem,4.4vw,4rem)", lineHeight: 1.02, letterSpacing: "-0.02em" }}>
-            Dubai Commercial Tower &mdash; Ijarah Sukuk.
+            Demonstration Asset: Dubai Commercial Tower &mdash; Ijarah Sukuk Model.
           </h2>
         </div>
 
@@ -329,7 +329,7 @@ export default function Home() {
             {/* Stats grid */}
             <div className="responsive-grid grid-2" style={{ gridTemplateColumns: "1fr 1fr", gap: "1px", background: C.border, border: `1px solid ${C.border}`, marginBottom: "2rem" }}>
               {[
-                { label: "Target Yield", val: "8.5% APY", accent: true },
+                { label: "Illustrative Yield", val: "8.5%", accent: true },
                 { label: "Asset Value",  val: "$120,000,000" },
                 { label: "Structure",    val: "Ijarah (Lease)" },
                 { label: "Maturity",     val: "5 Years" },
@@ -393,8 +393,8 @@ export default function Home() {
           <div className="responsive-grid grid-3" style={{ gridTemplateColumns: "repeat(3,1fr)", gap: "1px", background: C.darkAlt, border: `1px solid ${C.darkAlt}`, borderRadius: 4, marginTop: 80, overflow: "hidden" }}>
             {[
               { tag: "Trust anchor", title: "DigiCert Trusted Root G4", body: "The same class of root certificate a browser uses to validate HTTPS — the chain DocuSign signs with. No custom trust assumptions." },
-              { tag: "No middlemen", title: "No notary. No relay. No custodian.", body: "No relay server, no third-party trust assumption beyond a certificate authority already trusted throughout the internet." },
-              { tag: "On-chain auth", title: "Authorisation lives on Arc", body: "Mizan keeps no internal list of approved investors. Authorisation state lives natively via the HalalGate verifier contract on Arc Testnet." },
+              { tag: "No middlemen", title: "No document relay. No custodian.", body: "No custody of sensitive investor information — no third-party trust assumption beyond a certificate authority already trusted throughout the internet." },
+              { tag: "On-chain auth", title: "Authorisation lives on Arc", body: "Mizan keeps no internal list of approved investors. Authorisation state lives natively via the ZKSukukGate contract on Arc Testnet." },
             ].map((t) => (
               <div key={t.tag} style={{ background: C.dark, padding: "36px 34px", display: "flex", flexDirection: "column", gap: 14 }}>
                 <div style={{ fontFamily: mono, fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: C.warmAccent }}>{t.tag}</div>
