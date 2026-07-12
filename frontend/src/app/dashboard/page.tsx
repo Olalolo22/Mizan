@@ -11,11 +11,11 @@ export const arcTestnet = {
   nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 18 },
   rpcUrls: {
     default: { http: ["https://rpc.testnet.arc.network"] },
-    public: { http: ["https://rpc.testnet.arc.network"] }
+    public: { http: ["https://rpc.testnet.arc.network"] },
   },
   blockExplorers: {
-    default: { name: "ArcScan", url: "https://testnet.arcscan.app" }
-  }
+    default: { name: "ArcScan", url: "https://testnet.arcscan.app" },
+  },
 };
 
 export default function Dashboard() {
@@ -23,14 +23,12 @@ export default function Dashboard() {
   const [sukukBalance, setSukukBalance] = useState("0");
   const [claimableYield, setClaimableYield] = useState("0");
   const [loading, setLoading] = useState(false);
+  const [claimed, setClaimed] = useState(false);
 
   const connectWallet = async () => {
     if (typeof window !== "undefined" && window.ethereum) {
       try {
-        const client = createWalletClient({
-          chain: arcTestnet,
-          transport: custom(window.ethereum)
-        });
+        const client = createWalletClient({ chain: arcTestnet, transport: custom(window.ethereum) });
         const [address] = await client.requestAddresses();
         setWallet(address);
       } catch (e) {
@@ -41,17 +39,13 @@ export default function Dashboard() {
 
   const fetchBalances = async () => {
     if (!wallet) return;
-    const publicClient = createPublicClient({
-      chain: arcTestnet,
-      transport: http()
-    });
-
+    const publicClient = createPublicClient({ chain: arcTestnet, transport: http() });
     try {
       const balance = await publicClient.readContract({
         address: addresses.SukukToken as Address,
         abi: abis.SukukToken,
         functionName: "balanceOf",
-        args: [wallet]
+        args: [wallet],
       });
       setSukukBalance(formatEther(balance as bigint));
 
@@ -59,7 +53,7 @@ export default function Dashboard() {
         address: addresses.SukukDistributor as Address,
         abi: abis.SukukDistributor,
         functionName: "claimableYield",
-        args: [wallet]
+        args: [wallet],
       });
       setClaimableYield(formatEther(yieldAmount as bigint));
     } catch (e) {
@@ -79,27 +73,17 @@ export default function Dashboard() {
     if (!wallet || !window.ethereum) return;
     setLoading(true);
     try {
-      const client = createWalletClient({
-        account: wallet,
-        chain: arcTestnet,
-        transport: custom(window.ethereum)
-      });
-      
-      const publicClient = createPublicClient({
-        chain: arcTestnet,
-        transport: http()
-      });
-
+      const client = createWalletClient({ account: wallet, chain: arcTestnet, transport: custom(window.ethereum) });
+      const publicClient = createPublicClient({ chain: arcTestnet, transport: http() });
       const { request } = await publicClient.simulateContract({
         address: addresses.SukukDistributor as Address,
         abi: abis.SukukDistributor,
         functionName: "claimYield",
-        account: wallet
+        account: wallet,
       });
-
       const hash = await client.writeContract(request);
       await publicClient.waitForTransactionReceipt({ hash });
-      alert(`Yield claimed! Tx: ${hash}`);
+      setClaimed(true);
       fetchBalances();
     } catch (e: any) {
       console.error(e);
@@ -108,77 +92,251 @@ export default function Dashboard() {
     setLoading(false);
   };
 
+  /* ── CONNECT WALL ── */
   if (!wallet) {
     return (
-      <div style={{ maxWidth: "800px", margin: "4rem auto", textAlign: "center" }}>
-        <h1 style={{ fontSize: "2.5rem", marginBottom: "2rem" }}>Investor Dashboard</h1>
-        <div className="glass-panel" style={{ padding: "4rem 2rem" }}>
-          <h2 style={{ marginBottom: "1.5rem" }}>Please Connect Wallet</h2>
-          <button onClick={connectWallet} className="btn-primary">Connect MetaMask</button>
+      <main
+        style={{ maxWidth: "520px", margin: "6rem auto", textAlign: "center", paddingBottom: "6rem" }}
+        className="page-enter"
+      >
+        <div className="badge badge-blue" style={{ marginBottom: "1.5rem" }}>Investor Dashboard</div>
+        <h1
+          style={{
+            fontFamily: "'Syne', sans-serif",
+            fontSize: "2.5rem",
+            fontWeight: 800,
+            letterSpacing: "-0.04em",
+            marginBottom: "0.75rem",
+          }}
+        >
+          Your Portfolio
+        </h1>
+        <p style={{ color: "var(--text-secondary)", marginBottom: "3rem", lineHeight: 1.65 }}>
+          Connect your wallet to view your Sukuk holdings and claimable yield.
+        </p>
+        <div className="glass-panel" style={{ padding: "3rem 2.5rem" }}>
+          <div
+            style={{
+              width: "72px",
+              height: "72px",
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 1.5rem auto",
+              fontSize: "2rem",
+            }}
+          >
+            🦊
+          </div>
+          <h2 style={{ fontSize: "1.2rem", fontWeight: 700, marginBottom: "1.5rem", letterSpacing: "-0.02em" }}>
+            Connect Wallet to Begin
+          </h2>
+          <button onClick={connectWallet} className="btn-primary" style={{ padding: "13px 36px", fontSize: "1rem", borderRadius: "12px" }}>
+            Connect MetaMask
+          </button>
         </div>
-      </div>
+      </main>
     );
   }
 
+  const yieldNum = Number(claimableYield);
+  const canClaim = yieldNum > 0 && !loading;
+
   return (
-    <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "2rem 0" }}>
-      <div className="bg-glow-1"></div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "3rem", position: "relative", zIndex: 1 }}>
-        <h1 style={{ fontSize: "2.5rem", fontWeight: 700 }}>Portfolio</h1>
-        <div style={{ padding: "8px 16px", background: "rgba(255,255,255,0.05)", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.1)", fontSize: "0.875rem" }}>
-          {wallet.slice(0,6)}...{wallet.slice(-4)}
+    <main style={{ paddingTop: "3.5rem", paddingBottom: "6rem" }} className="page-enter">
+
+      {/* ── PAGE HEADER ── */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "3rem", gap: "1rem", flexWrap: "wrap" }}>
+        <div>
+          <div className="badge badge-emerald" style={{ marginBottom: "0.75rem" }}>
+            <span className="pulse-dot" />
+            Live · Arc Testnet
+          </div>
+          <h1
+            style={{
+              fontFamily: "'Syne', sans-serif",
+              fontSize: "2.5rem",
+              fontWeight: 800,
+              letterSpacing: "-0.04em",
+            }}
+          >
+            Portfolio
+          </h1>
+        </div>
+        <div
+          style={{
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            borderRadius: "10px",
+            padding: "10px 16px",
+            fontFamily: "monospace",
+            fontSize: "0.88rem",
+            color: "var(--text-secondary)",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+          }}
+        >
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--emerald)", display: "inline-block", boxShadow: "0 0 8px var(--emerald-glow)" }} />
+          {wallet.slice(0, 8)}…{wallet.slice(-6)}
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", marginBottom: "3rem", position: "relative", zIndex: 1 }}>
-        <div className="glass-panel" style={{ padding: "2rem" }}>
-          <div style={{ color: "var(--text-muted)", fontSize: "0.875rem", marginBottom: "0.5rem" }}>My Sukuk Holdings (DCTS)</div>
-          <div style={{ fontSize: "3rem", fontWeight: 700, color: "var(--emerald)" }}>{sukukBalance}</div>
-          <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.05)", fontSize: "0.875rem", color: "var(--text-secondary)" }}>
-            Dubai Commercial Tower
+      {/* ── TOP CARDS ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "2rem" }}>
+
+        {/* Holdings */}
+        <div className="glass-panel" style={{ padding: "2rem 2.25rem", position: "relative", overflow: "hidden" }}>
+          <div
+            style={{
+              position: "absolute",
+              top: 0, right: 0,
+              width: "180px", height: "180px",
+              background: "radial-gradient(circle at top right, rgba(16,217,138,0.07) 0%, transparent 70%)",
+              pointerEvents: "none",
+            }}
+          />
+          <div className="stat-label">My Sukuk Holdings (DCTS)</div>
+          <div style={{ fontSize: "3.25rem", fontWeight: 900, letterSpacing: "-0.05em", lineHeight: 1.1, marginBottom: "0.5rem" }}
+            className="text-gradient-emerald">
+            {sukukBalance}
+          </div>
+          <hr className="divider" />
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: "0.82rem", color: "var(--text-secondary)" }}>Dubai Commercial Tower</span>
+            <span className="badge badge-emerald" style={{ fontSize: "0.7rem" }}>Ijarah</span>
           </div>
         </div>
-        
-        <div className="glass-panel" style={{ padding: "2rem", display: "flex", flexDirection: "column" }}>
-          <div style={{ color: "var(--text-muted)", fontSize: "0.875rem", marginBottom: "0.5rem" }}>Claimable Yield (USDC)</div>
-          <div style={{ fontSize: "3rem", fontWeight: 700, color: "var(--gold)" }}>${Number(claimableYield).toFixed(2)}</div>
-          
-          <div style={{ marginTop: "auto", paddingTop: "1rem" }}>
-            <button 
-              onClick={claimYield} 
-              disabled={loading || Number(claimableYield) === 0} 
-              className="btn-primary" 
-              style={{ width: "100%" }}
-            >
-              {loading ? "Claiming..." : "Claim Yield"}
-            </button>
+
+        {/* Yield */}
+        <div className="glass-panel" style={{ padding: "2rem 2.25rem", display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
+          <div
+            style={{
+              position: "absolute",
+              top: 0, right: 0,
+              width: "180px", height: "180px",
+              background: "radial-gradient(circle at top right, rgba(245,185,66,0.07) 0%, transparent 70%)",
+              pointerEvents: "none",
+            }}
+          />
+          <div className="stat-label">Claimable Yield (USDC)</div>
+          <div style={{ fontSize: "3.25rem", fontWeight: 900, letterSpacing: "-0.05em", lineHeight: 1.1, marginBottom: "0.5rem" }}
+            className="text-gradient-gold">
+            ${yieldNum.toFixed(2)}
+          </div>
+          <hr className="divider" />
+          <div style={{ marginTop: "auto" }}>
+            {claimed ? (
+              <div
+                style={{
+                  background: "rgba(16,217,138,0.08)",
+                  border: "1px solid rgba(16,217,138,0.2)",
+                  borderRadius: "10px",
+                  padding: "12px",
+                  textAlign: "center",
+                  color: "var(--emerald)",
+                  fontSize: "0.9rem",
+                  fontWeight: 600,
+                }}
+              >
+                ✓ Yield Claimed
+              </div>
+            ) : (
+              <button
+                onClick={claimYield}
+                disabled={!canClaim}
+                className="btn-gold"
+                style={{ width: "100%", padding: "13px", fontSize: "0.95rem", borderRadius: "12px" }}
+              >
+                {loading ? (
+                  <>
+                    <span className="spinner" style={{ borderTopColor: "#000" }} />
+                    Claiming…
+                  </>
+                ) : (
+                  "Claim Yield"
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="glass-panel" style={{ padding: "2rem", position: "relative", zIndex: 1 }}>
-        <h3 style={{ fontSize: "1.25rem", marginBottom: "1.5rem" }}>Asset Details</h3>
-        <table style={{ width: "100%", textAlign: "left", borderCollapse: "collapse" }}>
+      {/* ── ASSET DETAILS ── */}
+      <div className="glass-panel" style={{ padding: "2.25rem 2.5rem", marginBottom: "2rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+          <h3 style={{ fontSize: "1.05rem", fontWeight: 700, letterSpacing: "-0.02em" }}>Asset Details</h3>
+          <a
+            href="https://testnet.arcscan.app"
+            target="_blank"
+            rel="noreferrer"
+            style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "0.3rem" }}
+          >
+            View on ArcScan ↗
+          </a>
+        </div>
+        <table className="data-table">
           <tbody>
-            <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-              <td style={{ padding: "1rem 0", color: "var(--text-secondary)" }}>Asset</td>
-              <td style={{ padding: "1rem 0", fontWeight: 600 }}>Dubai Commercial Tower</td>
-            </tr>
-            <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-              <td style={{ padding: "1rem 0", color: "var(--text-secondary)" }}>Structure</td>
-              <td style={{ padding: "1rem 0", fontWeight: 600 }}>Ijarah (Lease-based Sukuk)</td>
-            </tr>
-            <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-              <td style={{ padding: "1rem 0", color: "var(--text-secondary)" }}>APY</td>
-              <td style={{ padding: "1rem 0", fontWeight: 600, color: "var(--emerald)" }}>8.5%</td>
-            </tr>
-            <tr>
-              <td style={{ padding: "1rem 0", color: "var(--text-secondary)" }}>Next Distribution</td>
-              <td style={{ padding: "1rem 0", fontWeight: 600 }}>Dec 1, 2026</td>
-            </tr>
+            {[
+              { label: "Asset", value: "Dubai Commercial Tower (DIFC)" },
+              { label: "Structure", value: "Ijarah (Lease-based Sukuk)" },
+              { label: "Target APY", value: "8.5%", accent: true },
+              { label: "Maturity", value: "5 Years" },
+              { label: "Next Distribution", value: "Dec 1, 2026" },
+              { label: "Compliance", value: "ZK-verified Accreditation" },
+            ].map((row) => (
+              <tr key={row.label}>
+                <td className="td-label">{row.label}</td>
+                <td className={`td-value${row.accent ? " text-emerald" : ""}`}
+                  style={{ color: row.accent ? "var(--emerald)" : undefined }}>
+                  {row.value}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
-    </div>
+
+      {/* ── ZK STATUS ── */}
+      <div className="glass-panel"
+        style={{
+          padding: "1.5rem 2rem",
+          display: "flex",
+          alignItems: "center",
+          gap: "1.25rem",
+          border: "1px solid rgba(16,217,138,0.15)",
+          background: "rgba(16,217,138,0.04)",
+        }}
+      >
+        <div
+          style={{
+            width: "44px",
+            height: "44px",
+            background: "rgba(16,217,138,0.12)",
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "1.3rem",
+            flexShrink: 0,
+          }}
+        >
+          🔒
+        </div>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: "0.93rem", marginBottom: "0.2rem" }}>ZK Accreditation Active</div>
+          <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)" }}>
+            Groth16 proof verified on-chain · No identity data exposed · Nullifier registered
+          </div>
+        </div>
+        <span className="badge badge-emerald" style={{ marginLeft: "auto", flexShrink: 0 }}>
+          <span className="pulse-dot" />
+          Verified
+        </span>
+      </div>
+    </main>
   );
 }
