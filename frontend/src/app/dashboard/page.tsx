@@ -35,6 +35,20 @@ export default function Dashboard() {
     }
   };
 
+  useEffect(() => {
+    const checkConnection = async () => {
+      if (typeof window !== "undefined" && window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({ method: "eth_accounts" });
+          if (accounts && accounts.length > 0) {
+            setWallet(accounts[0] as Address);
+          }
+        } catch (e) { console.error("Auto-connect failed", e); }
+      }
+    };
+    checkConnection();
+  }, []);
+
   const fetchBalances = async () => {
     if (!wallet) return;
     const publicClient = createPublicClient({ chain: arcTestnet, transport: http() });
