@@ -57,13 +57,13 @@ export async function POST(req: Request) {
       [walletRaw, nullifier, timestamp]
     );
 
-    // Reconstruct the full SP1 Groth16 proof bytes string if necessary, 
-    // but the `verifyAndAuthorize` function expects the SP1 proof bytes without the 4-byte prefix.
-    // Actually, looking at standard SP1 integration, `proofData.raw_sp1_proof_hex` starts with the 4 byte prefix.
-    // Wait, let's just pass `0x` + raw_sp1_proof_hex since SP1Verifier strips the prefix if it's there?
-    // SP1Verifier Groth16 implementation expects the proof bytes to be exactly the gnark proof layout or with prefix.
-    // The proof bytes from `raw_sp1_proof_hex` is the full byte array output from SP1.
-    const rawProofBytes = `0x${proofData.raw_sp1_proof_hex}` as Hex;
+    // SP1 Groth16 proof hex starts with a 4-byte function selector (0x4388a21c).
+    // The SP1Verifier.sol wrapper expects the raw gnark proof bytes WITHOUT this prefix.
+    const proofHexRaw = proofData.raw_sp1_proof_hex as string;
+    const proofHexStripped = proofHexRaw.startsWith("4388a21c")
+      ? proofHexRaw.slice(8)
+      : proofHexRaw;
+    const rawProofBytes = `0x${proofHexStripped}` as Hex;
 
     console.log("Submitting transaction to Arc Testnet...");
     const { request } = await publicClient.simulateContract({
