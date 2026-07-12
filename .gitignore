@@ -1,0 +1,15 @@
+# Foundry
+cache/
+out/
+broadcast/
+.env
+
+# Node
+node_modules/
+dist/
+.next/
+
+# Misc
+.DS_Store
+*.log
+zk/target/
