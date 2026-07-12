@@ -1,44 +1,101 @@
 # Mizan
 
-Privacy-preserving compliance infrastructure for tokenized Real World Assets on Arc.
+**Zero-knowledge compliance infrastructure for institutional Real World Assets on Arc.**
 
-Mizan demonstrates how institutional assets can be tokenized with native compliance enforcement.
+Mizan demonstrates how regulated assets can be tokenized, distributed, and traded while keeping investor identity and financial documents completely private.
 
-Instead of storing investor identities in centralized databases, Mizan transforms accredited investor attestations into zero-knowledge proofs using SP1 zkVM.
+Traditional RWA platforms solve compliance through centralized whitelists and custodial databases.
 
-The result:
+Mizan replaces this model with cryptographic compliance.
 
-- Investors prove eligibility without revealing financial documents.
-- Arc verifies compliance on-chain.
-- The asset itself enforces transfer restrictions.
+Investors prove eligibility using a Zero-Knowledge proof generated from a trusted accredited investor attestation. The Arc network verifies the proof without ever seeing the underlying document.
 
-Mizan moves compliance from a centralized whitelist into a cryptographic property of the token.
+Once verified, investors receive a compliance-bound Sukuk token that can only move between authorized wallets.
+
+Compliance is not a database entry.
+
+It is enforced by the asset itself.
 
 ---
 
 ## The Problem
 
-Tokenization has solved digital ownership.
+Tokenizing real-world assets is no longer the difficult part.
 
-It has not solved compliant ownership.
+The challenge is maintaining institutional-grade compliance after issuance.
 
-Institutional Real World Assets require investor eligibility verification, privacy protection, transfer restrictions, and regulatory controls.
+Traditional systems require:
 
-Current approaches rely on centralized databases and administrator-managed allowlists. This creates a difficult tradeoff: transparency requires exposing information, privacy reduces verifiability.
+- Storing investor documents
+- Maintaining centralized KYC databases
+- Trusting administrators to enforce transfer rules
+- Allowing sensitive financial information to become a security liability
 
-Mizan removes this tradeoff by replacing identity-based compliance with cryptographic compliance.
+For regulated assets, onboarding compliance is not enough.
 
-The blockchain never learns who an investor is. It only verifies that the investor satisfies the required conditions.
+Secondary market transfers must remain compliant.
 
 ---
 
-## Core Innovation — Continuous Embedded Compliance
+## The Solution
 
-Most RWA platforms verify investors once, then rely on centralized permission lists.
+Mizan introduces a cryptographic compliance layer for tokenized assets.
 
-Mizan embeds compliance directly into the asset.
+The system combines:
 
-The `SukukToken` ERC20 implements authorization checks at the transfer layer. Every transfer verifies sender and receiver authorization. If either wallet has not passed verification, the transfer fails.
+- SP1 zkVM for privacy-preserving document verification
+- Arc smart contracts for programmable compliance
+- ZK-bound authorization for asset ownership
+- USDC settlement for automated yield distribution
+
+The blockchain only learns:
+
+✓ A valid accreditation proof exists  
+✓ The proof has not been reused  
+✓ The wallet is authorized to hold the asset  
+
+The blockchain never learns:
+
+✗ Investor identity  
+✗ Financial documents  
+✗ Net worth information  
+✗ Private accreditation data  
+
+---
+
+## Core Features
+
+### Zero-Knowledge Investor Verification
+
+Investors prove accreditation eligibility without revealing their documents.
+
+SP1 zkVM verifies:
+
+- Digital signatures
+- Document authenticity
+- Attestation validity
+- Timestamp requirements
+
+The result is compressed into a Groth16 proof verified directly on Arc.
+
+---
+
+### Compliance-Native Sukuk Token
+
+Unlike a standard ERC20, Mizan tokens enforce compliance at the protocol level.
+
+Every transfer checks:
+
+- Sender authorization
+- Recipient authorization
+
+An unverified wallet cannot:
+
+- Receive the asset
+- Hold the asset
+- Participate in the secondary market
+
+Compliance is embedded directly into the token lifecycle.
 
 ```solidity
 function _update(address from, address to, uint256 value) internal override {
@@ -48,12 +105,33 @@ function _update(address from, address to, uint256 value) internal override {
 }
 ```
 
-- ✓ Unauthorized wallets cannot receive tokens
-- ✓ Secondary transfers remain compliant
-- ✓ No centralized whitelist operator controls ownership
-- ✓ Compliance rules travel with the asset
+---
 
-The token itself becomes compliance-aware.
+### On-Chain Verification Gate
+
+`ZKSukukGate`
+
+Responsible for:
+
+- SP1 proof verification
+- Nullifier replay protection
+- Investor authorization
+- Asset issuance
+- Accreditation revocation
+
+---
+
+### USDC Yield Distribution
+
+`SukukDistributor`
+
+The asset manager deposits rental income into the distribution contract.
+
+The contract:
+
+- Tracks investor ownership
+- Calculates proportional yield
+- Allows investors to claim USDC payouts
 
 ---
 
@@ -78,91 +156,68 @@ sequenceDiagram
     Y->>U: Transfer USDC Yield
 ```
 
-### ZKSukukGate.sol
-
-The compliance verification layer.
-
-- Verifies SP1 proofs through the Arc verifier contract
-- Prevents proof replay attacks using nullifiers
-- Maintains authorized investor registry
-- Mints compliant Sukuk tokens on successful verification
-- Supports investor authorization revocation
-
-### SukukToken.sol
-
-The compliance-aware RWA token.
-
-Unlike a standard ERC20, only verified investors can hold or transfer tokens. Secondary market movement remains compliant without any administrator intervention.
-
-### SukukDistributor.sol
-
-The yield distribution layer. Asset managers deposit USDC rental proceeds. Investors claim proportional yield based on their Sukuk holdings.
-
----
-
-## Privacy Model
-
-The blockchain does not store identity information, financial statements, accreditation documents, or CPA letters.
-
-The blockchain only verifies:
-
-- The proof is valid
-- The proof has not been used before
-- The wallet is authorized
-
 ---
 
 ## Circle & Arc Integration
 
-Mizan is built on Arc Testnet with USDC-based settlement.
+Mizan uses Arc as the settlement layer for regulated RWAs.
 
-The architecture is designed for Circle Programmable Wallets (institutional onboarding without requiring users to manage traditional crypto wallets) and Circle CCTP (cross-chain USDC settlement infrastructure for multi-chain rental yield collection).
+Circle infrastructure enables:
 
----
+- USDC-based yield settlement
+- Institutional wallet onboarding through Programmable Wallets
+- Future cross-chain treasury movement through CCTP
 
-## Smart Contracts (Arc Testnet)
-
-| Contract | Address |
-|---|---|
-| ZKSukukGate | `0xbE3EE75542E52879A451C38b7474706E367941cd` |
-| SukukToken | `0xdf80e7e8dE2C8A15959009A51D052aEE9554875d` |
-| SukukDistributor | `0xc577F43f0Aa7595F680e1986F077253Da24c3F23` |
-| SP1 Verifier | `0x79052214591e45D1dfcC9AcAaf9f2dC853410Fe1` |
+A future deployment could allow global rental income to flow across chains through CCTP before being distributed to verified Sukuk holders on Arc.
 
 ---
 
-## Local Development
+## Demo Flow
 
-```bash
-git clone https://github.com/Olalolo22/Mizan.git
-cd Mizan/frontend
-npm install
-npm run dev
-```
+1. Investor connects wallet
+2. Investor submits accreditation proof
+3. Relayer submits verification transaction
+4. Arc verifies SP1 proof
+5. Wallet becomes authorized
+6. Sukuk tokens are minted
+7. Transfer restrictions enforce compliance
+8. Asset manager deposits USDC yield
+9. Investor claims payout
 
 ---
 
 ## Hackathon Demo Notes
 
-For the prototype:
+The frontend demonstrates the complete verification workflow using a pre-generated SP1 proof.
 
-- The frontend demonstrates proof submission using a generated SP1 proof artifact.
-- SP1 verification, authorization logic, nullifier protection, transfer restrictions, and yield distribution are designed to execute on Arc Testnet.
-- Wallet binding inside the ZK circuit is simplified for demonstration purposes.
+The following components execute on Arc Testnet:
+
+- SP1 proof verification
+- Nullifier replay protection
+- Investor authorization
+- Compliance-bound ERC20 transfers
+- USDC yield distribution
+
+Production improvements would include:
+
+- Live SP1 proof generation
+- Wallet-bound proof commitments
+- Production Circle Wallet integration
+- Cross-chain USDC treasury flows via CCTP
 
 ---
 
-## Future Work
+## Vision
 
-- Fully live SP1 proof generation pipeline
-- Wallet-bound proof generation
-- Jurisdiction-aware compliance policies
-- Circle Programmable Wallet production integration
-- Cross-chain USDC treasury flows through CCTP
-- Institutional asset onboarding framework
+Mizan moves RWA compliance from centralized permission lists to programmable cryptographic rules.
 
----
+The future of institutional assets is not:
 
-## Hackathon Track
+"Who approved this wallet?"
 
-**Best Real World Asset Tokenization on Arc with Embedded Compliance** — OKX × Arc × Circle Hackathon
+It is:
+
+"Can this wallet mathematically prove it is allowed to participate?"
+
+Built on Arc.
+Powered by zero knowledge.
