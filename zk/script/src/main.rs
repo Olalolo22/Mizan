@@ -130,158 +130,18 @@ async fn run_prover() {
     println!("  nullifier: {}", hex::encode(nullifier));
     println!("  timestamp: {}", timestamp);
 
-    // === ENCODE FOR SOROBAN (byte-accurate G2 encoding) ===
-    // Passes the real public values extracted above — no placeholders.
-    let soroban_proof = encode_proof_for_soroban(
-        &proof,
-        proofpass_wallet_raw_out,
-        nullifier,
-        timestamp,
-    );
+    // === ENCODE FOR EVM (Arc Testnet) ===
+    let evm_proof = serde_json::json!({
+        "raw_sp1_proof_hex": hex::encode(proof.bytes()),
+        "public_inputs": {
+            "proofpass_wallet_raw": format!("0x{}", hex::encode(proofpass_wallet_raw_out)),
+            "nullifier": format!("0x{}", hex::encode(nullifier)),
+            "timestamp": timestamp
+        }
+    });
 
-    // Pretty-print the JSON layout for verification
-    println!("\n=== SOROBAN PROOF ENCODING ===");
-    println!("  pi_a (G1, 64B):  {}...", &soroban_proof.pi_a[..18]);
-    println!("  pi_b (G2, 128B): {}...", &soroban_proof.pi_b[..18]);
-    println!("  pi_c (G1, 64B):  {}...", &soroban_proof.pi_c[..18]);
-    println!("  vkey prefix:     {}", soroban_proof.program_vkey_hash);
-    println!("  G2 order: x1,x0,y1,y0 (gnark/Soroban native — no swap needed)");
+    fs::write("proof.json", serde_json::to_string_pretty(&evm_proof).unwrap())
+        .expect("Failed to write proof.json");
 
-    // Save artifacts
-    fs::write(
-        "proof.json",
-        serde_json::to_string_pretty(&soroban_proof).unwrap(),
-    )
-    .expect("Failed to write proof.json");
-
-    println!("\nFull proof.json written — ready for Soroban submission.");
-    println!("Next: stellar contract invoke --id <CONTRACT> --fn verify_and_authorize ...");
-}
-
-/// Returns the DigiCert Trusted Root G4 DER bytes, embedded at compile time.
-///
-/// Why compile-time embedding?
-/// - The SP1 zkVM runs in a sandboxed environment with no filesystem access at runtime.
-/// - The trust anchor must be available inside the proof-generation pipeline without
-///   external dependencies.
-/// - Baking it in at compile time prevents runtime substitution attacks — the same
-///   reason browsers ship root CAs inside their binaries rather than reading them
-///   from a user-writable path.
-///
-/// Source: DigiCert Trusted Root G4 — the actual root that signs DocuSign eSignature
-/// PDF certificates. Fetched from the DigiCert Trust Center and stored at
-/// certs/digicert_root_g4.der in this repository.
-fn load_docusign_root_cert() -> &'static [u8] {
-    include_bytes!("../../certs/digicert_root_g4.der")
-}
-
-// ─── Soroban-compatible proof encoding ───────────────────────────────────────
-//
-// SP1 Groth16 proof bytes layout (gnark BN254 uncompressed):
-//
-//   [0..4]      4-byte SP1 program vkey hash prefix → STRIP before Soroban
-//   [4..68]     pi_a  (G1) : x[32] || y[32]              — big-endian
-//   [68..196]   pi_b  (G2) : x1[32]||x0[32]||y1[32]||y0[32] — gnark order
-//   [196..260]  pi_c  (G1) : x[32] || y[32]              — big-endian
-//
-// G2 coordinate note:
-//   gnark (and therefore SP1) serialises G2 as [x1, x0, y1, y0] where
-//   x = x0 + i·x1 in Fp2.  This is exactly the order Soroban's
-//   Bn254G2Affine / env.crypto().bn254() expects (see CAP-0074 + SDK docs).
-//   NO extra swap is needed — the bytes come out of SP1 already in the right
-//   order for Soroban.  What *would* need swapping is if you were targeting
-//   Ethereum's alt_bn128 precompile (which uses x0,x1,y0,y1).
-//
-// Reference:
-//   • sp1-solana/crates/verifier/src/groth16  — convert_endianness pattern
-//   • stellar/rs-soroban-env / CAP-0074        — Bn254G2Affine field layout
-//   • Nethermind RISC0 verifier                — vkey prefix handling
-
-/// Byte-accurate Soroban Groth16 proof encoding.
-#[derive(Debug, Serialize, Deserialize)]
-pub struct SorobanProof {
-    /// pi_a: G1 affine point [x(32) || y(32)], big-endian, 0x-hex
-    pub pi_a: String,
-    /// pi_b: G2 affine point [x1(32)||x0(32)||y1(32)||y0(32)], big-endian, 0x-hex
-    /// Coordinate order is x1,x0,y1,y0 (gnark / Soroban convention).
-    pub pi_b: String,
-    /// pi_c: G1 affine point [x(32) || y(32)], big-endian, 0x-hex
-    pub pi_c: String,
-    /// SHA-256 digest of the SP1 program (vkey hash), 0x-hex.
-    /// Must match the value passed to `initialize` on the Soroban contract.
-    pub program_vkey_hash: String,
-    /// Raw SP1 proof bytes (before prefix stripping), for debugging.
-    pub raw_sp1_proof_hex: String,
-    /// Public values committed by the zkVM program.
-    pub public_inputs: SorobanPublicInputs,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct SorobanPublicInputs {
-    /// 32-byte investor Ed25519 wallet (G-account raw pubkey, not strkey), 0x-hex
-    pub proofpass_wallet_raw: String,
-    /// 32-byte nullifier = SHA-256(DocuSign sig bytes), 0x-hex
-    pub nullifier: String,
-    /// Unix timestamp (seconds) from the PDF date, also committed in the proof
-    pub timestamp: u64,
-}
-
-/// Encode a Groth16 proof into the byte-accurate format required by the
-/// Soroban `verify_and_authorize` contract function.
-///
-/// # Panics
-/// Panics if the proof bytes (after stripping the 4-byte prefix) are shorter
-/// than 256 bytes — which would indicate a malformed SP1 Groth16 output.
-#[cfg(feature = "sp1")]
-pub fn encode_proof_for_soroban(
-    proof: &SP1ProofWithPublicValues,
-    proofpass_wallet_raw: [u8; 32],
-    nullifier: [u8; 32],
-    timestamp: u64,
-) -> SorobanProof {
-    let raw = proof.bytes();
-
-    // SP1 Groth16 encoded-proof layout inside `proof.bytes()`:
-    //   [0..4]    4-byte groth16_vkey_hash prefix
-    //   [4..36]   exit_code    (32B)
-    //   [36..68]  vk_root      (32B)
-    //   [68..100] proof_nonce  (32B)
-    //   [100..356] BN254 point payload (256B): pi_a(64) + pi_b(128) + pi_c(64)
-    //
-    // The Soroban verifier needs only the BN254 point bytes, not this metadata.
-    assert!(
-        raw.len() >= 4 + 32 + 32 + 32 + 256,
-        "SP1 Groth16 proof bytes too short: got {} bytes, need at least 356",
-        raw.len()
-    );
-    let vkey_prefix = &raw[..4];
-    let proof_body = &raw[100..356]; // 256-byte Groth16 BN254 point payload
-
-    // ── Slice point coordinates ───────────────────────────────────────────────
-    // pi_a: G1 — uncompressed affine, big-endian [x(32) | y(32)]
-    let pi_a_bytes = &proof_body[0..64];
-
-    // pi_b: G2 — gnark serialises as [x1(32) | x0(32) | y1(32) | y0(32)]
-    // This is the "reversed" order relative to the EVM alt_bn128 precompile,
-    // but it is exactly what Soroban's Bn254G2Affine constructor expects.
-    // Fields: pi_b_x1 = [68..100], pi_b_x0 = [100..132],
-    //         pi_b_y1 = [132..164], pi_b_y0 = [164..196]
-    let pi_b_bytes = &proof_body[64..192]; // already [x1|x0|y1|y0] — no swap needed
-
-    // pi_c: G1 — same layout as pi_a
-    let pi_c_bytes = &proof_body[192..256];
-
-    // ── Encode as 0x-prefixed big-endian hex strings ──────────────────────────
-    SorobanProof {
-        pi_a: format!("0x{}", hex::encode(pi_a_bytes)),
-        pi_b: format!("0x{}", hex::encode(pi_b_bytes)),
-        pi_c: format!("0x{}", hex::encode(pi_c_bytes)),
-        program_vkey_hash: format!("0x{}", hex::encode(vkey_prefix)),
-        raw_sp1_proof_hex: hex::encode(&raw),
-        public_inputs: SorobanPublicInputs {
-            proofpass_wallet_raw: format!("0x{}", hex::encode(proofpass_wallet_raw)),
-            nullifier: format!("0x{}", hex::encode(nullifier)),
-            timestamp,
-        },
-    }
+    println!("\nFull proof.json written — ready for Arc EVM submission.");
 }

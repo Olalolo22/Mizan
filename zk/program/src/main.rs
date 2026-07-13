@@ -31,10 +31,14 @@ pub fn main() {
     // Step 4: Derive nullifier from DocuSign signature hash
     let nullifier = derive_nullifier(&pdf_bytes);
 
-    // Commit public outputs (these ARE revealed in proof)
+    // Commit public outputs EVM-ABI style (everything must be 32 bytes)
     io::commit(&investor_wallet);
     io::commit(&nullifier);
-    io::commit(&current_timestamp);
+    
+    // EVM abi-encodes uint64 as a 32-byte big-endian word
+    let mut ts_padded = [0u8; 32];
+    ts_padded[24..32].copy_from_slice(&current_timestamp.to_be_bytes());
+    io::commit(&ts_padded);
 }
 
 /// Verify PKCS#7 detached or embedded signature on PDF
