@@ -57,13 +57,10 @@ export async function POST(req: Request) {
       [walletRaw, nullifier, timestamp]
     );
 
-    // SP1 Groth16 proof hex starts with a 4-byte function selector (0x4388a21c).
-    // The SP1Verifier.sol wrapper expects the raw gnark proof bytes WITHOUT this prefix.
+    // SP1 EVM Verifier expects the raw proof bytes exactly as outputted by `.bytes()`,
+    // which in modern SP1 SDKs includes the 4-byte groth16_vkey_hash prefix.
     const proofHexRaw = proofData.raw_sp1_proof_hex as string;
-    const proofHexStripped = proofHexRaw.startsWith("4388a21c")
-      ? proofHexRaw.slice(8)
-      : proofHexRaw;
-    const rawProofBytes = `0x${proofHexStripped}` as Hex;
+    const rawProofBytes = `0x${proofHexRaw}` as Hex;
 
     console.log("Submitting transaction to Arc Testnet...");
     const { request } = await publicClient.simulateContract({
